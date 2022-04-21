@@ -2,94 +2,56 @@ package main
 
 import (
 	//"bufio"
-	"errors"
+	//"errors"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
+
+	//"os/exec"
 
 	"io/ioutil"
-	"path/filepath"
-	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/pterm/pterm"
+	//"path/filepath"
+	//"strings"
 )
 
-var qs = []*survey.Question{
-	{
-		Name: "cmd",
-		Prompt: &survey.Select{
-			Message: "Hi, choose a cmd:",
-			Options: []string{"dir", "cd", "cd..", "exit"},
-			Default: "dir",
-		},
-	},
+func main() {
+	pterm.DisableColor()
+	//reader := bufio.NewReader(os.Stdin)
+	s, _ := pterm.DefaultBigText.WithLetters(pterm.NewLettersFromString("Shellish")).Srender()
+	pterm.DefaultCenter.Println(s)
+
+	Choices()
+
+	for {
+		Choices()
+	}
 }
 
-func main() {
-	//reader := bufio.NewReader(os.Stdin)
+func Choices() {
+	cmd := "cmd"
+	prompt := &survey.Select{
+		Message: "Hi, choose a cmd:",
+		Options: []string{"dir", "cd", "cd..", "exit", "current"},
+		Default: "dir",
+	}
+	err := survey.AskOne(prompt, &cmd)
 
-	answers := struct {
-		Name string // survey will match the question and field names
-		cmd  string `survey:"cmd"` // or you can tag fields to match a specific name
-
-	}{}
-	err := survey.Ask(qs, &answers)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("%s chose %s.", answers.Name, answers.cmd)
-	for {
-		fmt.Print("> " + CurrentPath() + " ")
 
-		// Read the keyboad input.
+	if cmd == "dir" {
+		FilesTable()
 
-		if answers.cmd == "dir" {
-			files, _ := ListFiles()
-			fmt.Println(files)
-
-		} else if err = execInput(answers.cmd); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-	}
-}
-
-var ErrNoPath = errors.New("path required")
-
-func execInput(input string) error {
-
-	input = strings.TrimSuffix(input, "\r\n")
-
-	args := strings.Split(input, " ")
-
-	switch args[0] {
-	case "cd":
-
-		if len(args) < 2 {
-			return ErrNoPath
-		}
-
-		return os.Chdir(args[1])
-
-	case "cd..":
-
-		path, _ := os.Getwd()
-		fatherDir := filepath.Dir(path)
-		return os.Chdir(fatherDir)
-
-	case "exit":
+	} else if cmd == "exit" {
 		os.Exit(0)
 	}
 
-	cmd := exec.Command(args[0], args[1:]...)
-
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	return cmd.Run()
 }
-
 func CurrentPath() string {
 	path, err := os.Getwd()
 
@@ -111,5 +73,26 @@ func ListFiles() ([]string, error) {
 		files = append(files, file.Name())
 	}
 	return files, nil
+
+}
+
+func SizeFile(name string) (fileSize string) {
+
+	files, err := os.Stat(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fileSize = fmt.Sprint(files.Size())
+	return
+
+}
+func FilesTable() {
+	d := pterm.TableData{{"File Name", "Size(bytes)"}}
+	name, _ := ListFiles()
+
+	for _, s := range name {
+		d = append(d, []string{s, SizeFile(s)})
+	}
+	pterm.DefaultTable.WithHasHeader().WithData(d).Render()
 
 }
