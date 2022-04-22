@@ -1,20 +1,14 @@
 package main
 
 import (
-	//"bufio"
-	//"errors"
 	"fmt"
 	"log"
 	"os"
-
-	//"os/exec"
 
 	"io/ioutil"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pterm/pterm"
-	//"path/filepath"
-	//"strings"
 )
 
 func main() {
@@ -29,12 +23,11 @@ func main() {
 		Choices()
 	}
 }
-
 func Choices() {
 	cmd := "cmd"
 	prompt := &survey.Select{
 		Message: "Hi, choose a cmd:",
-		Options: []string{"dir", "cd", "cd..", "exit", "current"},
+		Options: []string{"dir", "cd", "cd..", "current", "exit"},
 		Default: "dir",
 	}
 	err := survey.AskOne(prompt, &cmd)
@@ -47,11 +40,26 @@ func Choices() {
 	if cmd == "dir" {
 		FilesTable()
 
+	} else if cmd == "cd" {
+		directory := ""
+		prompt := &survey.Input{
+			Message: "Write the name of a child directory:",
+		}
+		survey.AskOne(prompt, &directory)
+		ChangingDirectory(directory)
+
+	} else if cmd == "current" {
+		fmt.Println(CurrentPath())
+
+	} else if cmd == "cd.." {
+		Back()
+		fmt.Println(CurrentPath())
 	} else if cmd == "exit" {
 		os.Exit(0)
 	}
 
 }
+
 func CurrentPath() string {
 	path, err := os.Getwd()
 
@@ -95,4 +103,13 @@ func FilesTable() {
 	}
 	pterm.DefaultTable.WithHasHeader().WithData(d).Render()
 
+}
+
+func Back() (err error) {
+	err = os.Chdir("../")
+	return err
+}
+func ChangingDirectory(directory string) (err error) {
+	err = os.Chdir(directory)
+	return err
 }
