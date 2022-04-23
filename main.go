@@ -10,9 +10,9 @@ func main() {
 	s, _ := pterm.DefaultBigText.WithLetters(pterm.NewLettersFromString("Shellish")).Srender()
 	pterm.DefaultCenter.Println(s)
 
-	Choices()
+	Options()
 
 	for {
-		Choices()
+		Options()
 	}
 }
