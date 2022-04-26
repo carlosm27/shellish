@@ -9,56 +9,66 @@ import (
 	"github.com/pterm/pterm"
 )
 
-func CurrentPath() string {
+func CurrentPath() (string, error) {
 	path, err := os.Getwd()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	return path
+	return path, err
 }
 
 func ListFiles() ([]string, error) {
+
 	var files []string
-	path, _ := os.Getwd()
+
+	path, err := os.Getwd()
+
+	if err != nil {
+		log.Println(err)
+	}
+
 	fileInfo, err := ioutil.ReadDir(path)
 	if err != nil {
-		return files, err
+		log.Println(err)
 	}
 
 	for _, file := range fileInfo {
 		files = append(files, file.Name())
 	}
-	return files, nil
+	return files, err
 
 }
 
-func SizeFile(name string) (fileSize string) {
+func SizeFile(name string) (string, error) {
 
 	files, err := os.Stat(name)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	fileSize = fmt.Sprint(files.Size())
-	return
+
+	fileSize := fmt.Sprint(files.Size())
+	return fileSize, err
 
 }
-func FilesTable() {
-	d := pterm.TableData{{"File Name", "Size(bytes)"}}
-	name, _ := ListFiles()
+func FilesTable() error {
 
-	for _, s := range name {
-		d = append(d, []string{s, SizeFile(s)})
+	d := pterm.TableData{{"File Name", "Size(bytes)"}}
+	fileName, err := ListFiles()
+	if err != nil {
+		log.Println(err)
+	}
+
+	for _, s := range fileName {
+
+		sizeFile, err := SizeFile(s)
+		if err != nil {
+			log.Println(err)
+		}
+
+		d = append(d, []string{s, sizeFile})
 	}
 	pterm.DefaultTable.WithHasHeader().WithData(d).Render()
-
-}
-
-func BackToParentFolder() (err error) {
-	err = os.Chdir("../")
 	return err
-}
-func ChangingDirectory(directory string) (err error) {
-	err = os.Chdir(directory)
-	return err
+
 }
