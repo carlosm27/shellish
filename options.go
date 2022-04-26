@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"os"
 
@@ -32,15 +33,36 @@ func Options() {
 			Message: "Write the name of a child directory:",
 		}
 		survey.AskOne(prompt, &directory)
-		ChangingDirectory(directory)
-		fmt.Println(CurrentPath())
+
+		err := os.Chdir(directory)
+		if err != nil {
+			log.Println(err)
+		}
+
+		path, err := CurrentPath()
+		if err != nil {
+			log.Println(err)
+		}
+		fmt.Println(path)
 
 	case "cd..":
-		BackToParentFolder()
-		fmt.Println(CurrentPath())
+		err := os.Chdir("../")
+		if err != nil {
+			log.Println(err)
+		}
+
+		path, err := CurrentPath()
+		if err != nil {
+			log.Println(err)
+		}
+		fmt.Println(path)
 
 	case "current path":
-		fmt.Println(CurrentPath())
+		path, err := CurrentPath()
+		if err != nil {
+			log.Println(err)
+		}
+		fmt.Println(path)
 
 	case "exit":
 		os.Exit(0)
