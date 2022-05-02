@@ -4,7 +4,7 @@ A shell-ish program written in Go
 
 For using Shell-ish, clone the repo:
 
- `git clone  github.com/carlosm27/shellish`
+ `gh repo clone carlosm27/shellish`
 
 In the directory where Shell-ish is, open your shell and execute:
 
